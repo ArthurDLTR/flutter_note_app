@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\flutter_note_app",
+    "\\flutter_note_app\\lib"
   ],
+  "SelectedNode": "\\flutter_note_app\\lib\\main.dart",
   "PreviewInSolutionExplorer": false
 }
