@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_note_app/main.dart';
+import 'package:provider/provider.dart';
 
 class PreviewNoteCard extends StatelessWidget {
 
-  const PreviewNoteCard({super.key});
+  const PreviewNoteCard({super.key, required this.index});
+
+  final int index;
 
   @override
   Widget build(BuildContext context){
 
     const cardPadding = 5.0;
+
+    var appState = context.watch<MyAppState>();
 
     return ElevatedButton(
       style: ButtonStyle(
@@ -16,7 +22,10 @@ class PreviewNoteCard extends StatelessWidget {
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(0.0))
         )
       ),
-      onPressed: () => {},
+      onPressed: () => {
+        // print("Index : $index"); // Faire la redirection vers l'onglet agrandi de la note
+        appState.accessNote(index)
+      },
       child: Padding(
         padding: const EdgeInsets.all(cardPadding),
         child: Column(
@@ -28,7 +37,7 @@ class PreviewNoteCard extends StatelessWidget {
               child: RichText( // First, the title of the note in bold style and bigger
                 text: TextSpan(
                   text: "Titre de la note",
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 242, 242, 242))// fontSize: MediaQuery.of(context).size.width * 1.5 )
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 242, 242, 242), fontSize: 18), // fontSize: MediaQuery.of(context).size.width * 1.5 )
                 ),
                 textAlign: TextAlign.start,
               ),

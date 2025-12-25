@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_note_app/note_card.dart';
 import 'package:flutter_note_app/preview_note_card.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,31 +10,27 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Notes App',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 69, 222, 220)),
+    return ChangeNotifierProvider(
+      create: (context) => MyAppState(),
+      child: MaterialApp(
+        title: 'Flutter Notes App',
+        theme: ThemeData(
+          colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 69, 222, 220)),
+        ),
+        home: const MyHomePage(title: 'Your notes'),
       ),
-      home: const MyHomePage(title: 'Your notes'),
     );
+  }
+}
+
+class MyAppState extends ChangeNotifier {
+  int indexPage = -1;
+
+  void accessNote(int i){
+    indexPage = i;
+    notifyListeners();
   }
 }
 
@@ -55,14 +53,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    var appState = context.watch<MyAppState>();
+    int index = appState.indexPage;
+    Widget page;
+
+    if (index == -1){
+      page = HomeContainer();
+    } else if (index >= 0) {
+      page = NoteCard(index: index);
+    } else {
+      throw UnimplementedError('No note for this index: $index');
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       appBar: AppBar(
@@ -74,21 +79,32 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20)
-          ),
-          child: ListView.builder(
-            itemCount: 10,
-            itemBuilder: (BuildContext context, int index){
-              return PreviewNoteCard();
-            },
-          ),
+      body: page
+    );
+  }
+}
+
+class HomeContainer extends StatelessWidget {
+  const HomeContainer({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Container(
+        clipBehavior: Clip.hardEdge,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20)
         ),
-      )
+        child: ListView.builder(
+          itemCount: 10,
+          itemBuilder: (BuildContext context, int index){
+            return PreviewNoteCard(index: index);
+          },
+        ),
+      ),
     );
   }
 }
