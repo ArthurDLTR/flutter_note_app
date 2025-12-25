@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 247, 158, 49)),
+        colorScheme: .fromSeed(seedColor: const Color.fromARGB(255, 69, 222, 220)),
       ),
       home: const MyHomePage(title: 'Your notes'),
     );
@@ -64,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
@@ -73,17 +74,21 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            PreviewNoteCard()
-          ],
-        )
-      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20)
+          ),
+          child: ListView.builder(
+            itemCount: 10,
+            itemBuilder: (BuildContext context, int index){
+              return PreviewNoteCard();
+            },
+          ),
+        ),
+      )
     );
   }
 }
