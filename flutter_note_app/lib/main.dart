@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter_note_app/Note.class.dart';
+// import 'package:flutter_note_app/db.dart';
 import 'package:flutter_note_app/note_card.dart';
 import 'package:flutter_note_app/preview_note_card.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
@@ -91,6 +93,10 @@ class HomeContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // DB db = DB();
+    // db.initializeDatabase();
+    // db.insertNote(Note(id: 0, titre: 'Titre test', contenu: 'Contenu test'));
+    // print(db.getNotesLength());
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Container(
@@ -99,7 +105,7 @@ class HomeContainer extends StatelessWidget {
           borderRadius: BorderRadius.circular(20)
         ),
         child: ListView.builder(
-          itemCount: 10,
+          itemCount: 5, // db.getNotesLength(),
           itemBuilder: (BuildContext context, int index){
             return PreviewNoteCard(index: index);
           },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter_note_app/db.dart';
 import 'package:flutter_note_app/main.dart';
 import 'package:provider/provider.dart';
 
@@ -9,7 +10,9 @@ class NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    var appState = context.watch<MyAppState>();
+    // var appState = context.watch<MyAppState>();
+
+    // DB db = DB();
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
