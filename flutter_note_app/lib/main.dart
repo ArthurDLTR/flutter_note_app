@@ -61,10 +61,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     int index = appState.indexPage;
+    DB db = DB.instance;
     Widget page;
 
     if (index == -1){
       page = HomeContainer();
+    } else if (index == db.getNotesLength()) {
+      page = NewNoteCard(index: index);
     } else if (index >= 0) {
       page = NoteCard(index: index);
     } else {
@@ -93,22 +96,42 @@ class HomeContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DB db = DB.instance;
+    var appState = context.watch<MyAppState>();
     // db.initializeDatabase();
     // db.insertNote(Note(id: 0, titre: 'Titre test', contenu: 'Contenu test'));
     print(db.getNotesLength());
     return Padding(
       padding: const EdgeInsets.all(12.0),
-      child: Container(
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20)
-        ),
-        child: ListView.builder(
-          itemCount: db.getNotesLength(),
-          itemBuilder: (BuildContext context, int index){
-            return PreviewNoteCard(index: index);
-          },
-        ),
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: FloatingActionButton(
+              onPressed: () {
+                print("Ajout d'une note");
+                appState.accessNote(db.getNotesLength());
+              },
+              child: Icon(Icons.add),
+            ),
+          ),
+          SizedBox(height: 10,),
+          Expanded(
+            child: SizedBox(
+              child: Container(
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20)
+                ),
+                child: ListView.builder(
+                  itemCount: db.getNotesLength(),
+                  itemBuilder: (BuildContext context, int index){
+                    return PreviewNoteCard(index: index);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

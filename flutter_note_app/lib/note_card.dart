@@ -45,6 +45,38 @@ class NoteCard extends StatelessWidget {
   }
 }
 
+class NewNoteCard extends StatelessWidget {
+  const NewNoteCard({super.key, required this.index});
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context){
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ButtonsRow(),
+          Align(
+            alignment: Alignment.center,
+            child: TextFormField(
+              decoration: InputDecoration(labelText: "Title"),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextFormField(
+              decoration: InputDecoration(labelText: "Content of the note"),
+            )
+          )
+        ],
+      ),
+    );
+  }
+}
+
 class ButtonsRow extends StatelessWidget {
   const ButtonsRow ({super.key});
   
