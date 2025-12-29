@@ -1,40 +1,95 @@
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 import 'package:flutter_note_app/Note.class.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DB {
-  static DB? _db;
-  static Database? _database;
-  DB._createInstance();
+  static const String _file = 'notes_databases.db';
+  static const String _table = 'notes';
+  static const String _titleColumnName = 'titre';
+  static const String _contentColumnName = 'contenu';
 
-  factory DB() {
-    _db ??= DB._createInstance();
-    return _db!;
+  DB();
+
+  DB._internal(){
+    if (_database == null) database;
   }
 
-  Future<Database> get database async {
-    _database ??= await initializeDatabase();
+  static final DB instance = DB._internal();
+
+  DatabaseFactory databaseFactory = databaseFactoryFfi;
+
+  Database? _database;
+
+  Future<Database> get database async{
+    if (_database != null) return _database!;
+    _database = await open();
     return _database!;
   }
 
-  Future<Database> initializeDatabase() async {
-    Directory dir = await getApplicationDocumentsDirectory();
-    String path = '${dir.path}/notes_database.db';
-    // print(path);
-    var noteDb = openDatabase(path, version: 1, onCreate: (db, version) {return db.execute('CREATE TABLE notes (id PRIMARY KEY, titre TEXT, contenu TEXT)');});
-    return noteDb;
+  Future<Database> open() async {
+    return await databaseFactory.openDatabase(
+      join(await databaseFactory.getDatabasesPath(), _file),
+      options: OpenDatabaseOptions(
+        onCreate: (db, version) {
+          return db.execute('CREATE TABLE $_table(id INTEGER PRIMARY KEY AUTOINCREMENT, $_titleColumnName TEXT, $_contentColumnName TEXT)');
+        },
+        version: 1,
+      )
+    );
   }
 
+
+  Future<void> close() async {
+    await _database!.close();
+    _database = null;
+  }
+
+  // static DB? _db;
+  // DB._createInstance();
+
+  // factory DB() {
+  //   _db ??= DB._createInstance();
+  //   return _db!;
+  // }
+
+  // Future<Database> get database async {
+  //   _database ??= await initializeDatabase();
+  //   return _database!;
+  // }
+
+  // Future<Database> initializeDatabase() async {
+  //   // Directory dir = await getApplicationDocumentsDirectory();
+  //   // String path = '${dir.path}\notes_database.db';
+  //   // print(path);
+  //   // var noteDb = await openDatabase(path, version: 1, onCreate: (db, version) {return db.execute('CREATE TABLE notes (id PRIMARY KEY, titre TEXT, contenu TEXT)');});
+  //   // return noteDb;
+  //   final database = openDatabase(
+  //     join(await getDatabasesPath(), 'notes_databases.db'),
+  //     onCreate: (db, version) => {
+  //       return db.execute(
+  //         'CREATE TABLE'
+  //       )
+  //     },
+  //   );
+  // }
+
   Future<List<Note>> getNotes() async {
-    final db = await database;
+    final entries = await _database!.query(
+      _table,
+      columns: ['id', _titleColumnName, _contentColumnName],
+    );
+    final list = entries.map(
+      (e) => Note(id: e['id'] as int, titre: e[_titleColumnName] as String, contenu: e[_contentColumnName] as String)
+    ).toList();
+    return list;
+    // final db = await database;
 
-    final List<Map<String, Object?>> notesMap = await db.query('notes');
+    // final List<Map<String, Object?>> notesMap = await db.query('notes');
 
-    return [
-      for (final {'id': id as int, 'titre': titre as String, 'contenu': contenu as String} in notesMap)
-        Note(id: id, titre: titre, contenu: contenu),
-    ];
+    // return [
+    //   for (final {'id': id as int, 'titre': titre as String, 'contenu': contenu as String} in notesMap)
+    //     Note(id: id, titre: titre, contenu: contenu),
+    // ];
   }
 
   int getNotesLength(){
@@ -53,21 +108,27 @@ class DB {
     });
   }
 
-  Future<void> insertNote(Note n) async {
-    final db = await database;
+  Future<void> insertNote(String title, String content) async {
+    try {
+      await _database!.insert(_table, {
+        _titleColumnName: title,
+        _contentColumnName: content
+      });
+    } on Exception catch (e) {
+      print(e);
+    }
+    // final db = await database;
 
-    await db.insert(
-      'notes',
-      n.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    // await db.insert(
+    //   'notes',
+    //   n.toMap(),
+    //   conflictAlgorithm: ConflictAlgorithm.replace,
+    // );
   }
 
   Future<void> updateNote(Note n) async {
-    final db = await database;
-
-    await db.update(
-      'notes',
+    await _database!.update(
+      _table,
       n.toMap(),
       where: 'id = ?',
       whereArgs: [n.id]
@@ -75,10 +136,8 @@ class DB {
   }
 
   Future<void> deleteNote(int id) async{
-    final db = await database;
-
-    await db.delete(
-      'notes',
+    await _database!.delete(
+      _table,
       where: 'id = ?',
       whereArgs: [id]
     );

@@ -1,3 +1,5 @@
+import 'package:flutter_note_app/db.dart';
+
 class Note {
   final int id;
   final String titre;
