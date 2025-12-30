@@ -79,7 +79,7 @@ class DB {
       columns: ['id', _titleColumnName, _contentColumnName],
     );
     final list = entries.map(
-      (e) => Note(id: e['id'] as int, titre: e[_titleColumnName] as String, contenu: e[_contentColumnName] as String)
+      (e) => Note.complete(e['id'] as int, e[_titleColumnName] as String, e[_contentColumnName] as String)
     ).toList();
     return list;
     // final db = await database;
@@ -92,28 +92,31 @@ class DB {
     // ];
   }
 
-  int getNotesLength(){
-    int length = 0;
-
-    getLength().then((value) {
-      length = value;
-    });
-
-    return length;
+  Future<List<Map>> getNumber() async {
+    List<Map> result = await _database!.rawQuery('SELECT * FROM notes');
+    // result.forEach((row) => print(row));
+    return result;
+    // print(result[0]["COUNT(id)"]);
+    // return result[0]["COUNT(id)"];
   }
 
-  Future<int> getLength() async {
-    return await getNotes().then((value) {
-      return value.length;
-    });
+  int getNumberOfNotes() {
+    int length = 0;
+    // getNumber().then((value) => length = value);
+    return length;
   }
 
   Future<void> insertNote(String title, String content) async {
     try {
+      print("Insertion dans la table");
       await _database!.insert(_table, {
         _titleColumnName: title,
         _contentColumnName: content
       });
+      // for (Note n in await getNotes()){
+      //   print(n.toMap());
+      // }
+
     } on Exception catch (e) {
       print(e);
     }

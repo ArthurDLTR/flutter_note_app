@@ -1,11 +1,23 @@
-import 'package:flutter_note_app/db.dart';
+// import 'package:flutter_note_app/db.dart';
 
 class Note {
   final int id;
-  final String titre;
-  final String contenu;
+  String titre = "";
+  String contenu = "";
 
-  const Note({required this.id, required this.titre, required this.contenu});
+  Note({required this.id});
+  Note.complete(this.id, String title, String content) {
+    titre = title;
+    contenu = content;
+  }
+
+  int getId() => id;
+
+  void setTitle (String title) => titre = title;
+  String getTitle () => titre;
+
+  void setContent (String content) => contenu = content;
+  String getContent () => contenu;
 
   Map<String, Object?> toMap() {
     return {'id': id, 'titre': titre, 'contenu': contenu};

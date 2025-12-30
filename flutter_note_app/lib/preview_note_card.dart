@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 
 class PreviewNoteCard extends StatelessWidget {
 
-  const PreviewNoteCard({super.key, required this.index});
+  const PreviewNoteCard({super.key, required this.index, required this.title, required this.content});
 
   final int index;
+  final String title;
+  final String content;
 
   @override
   Widget build(BuildContext context){
@@ -36,7 +38,7 @@ class PreviewNoteCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: RichText( // First, the title of the note in bold style and bigger
                 text: TextSpan(
-                  text: "Titre de la note",
+                  text: title,
                   style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 242, 242, 242), fontSize: 18), // fontSize: MediaQuery.of(context).size.width * 1.5 )
                 ),
                 textAlign: TextAlign.start,
@@ -47,7 +49,7 @@ class PreviewNoteCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: RichText( // Then, a preview of the note with the first lines
                 text: TextSpan(
-                  text: "Aperçu du contenu de la note",
+                  text: content,
                   style: TextStyle(fontWeight: FontWeight.w300, color: Color.fromARGB(255, 159, 159, 162)) // fontSize: MediaQuery.of(context).size.width * 0.5)
                 ),
                 textAlign: TextAlign.start,

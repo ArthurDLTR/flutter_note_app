@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_note_app/db.dart';
 // import 'package:flutter_note_app/db.dart';
 import 'package:flutter_note_app/main.dart';
 import 'package:provider/provider.dart';
@@ -46,12 +48,12 @@ class NoteCard extends StatelessWidget {
 }
 
 class NewNoteCard extends StatelessWidget {
-  const NewNoteCard({super.key, required this.index});
-
-  final int index;
+  const NewNoteCard({super.key});
 
   @override
   Widget build(BuildContext context){
+    var appState = context.watch<MyAppState>();
+    
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Column(
@@ -62,13 +64,21 @@ class NewNoteCard extends StatelessWidget {
           Align(
             alignment: Alignment.center,
             child: TextFormField(
+              maxLines: 1,
               decoration: InputDecoration(labelText: "Title"),
+              onChanged: (value) => appState.modifyTitle(value),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(100)
+              ],
             ),
           ),
           Align(
             alignment: Alignment.centerLeft,
             child: TextFormField(
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
               decoration: InputDecoration(labelText: "Content of the note"),
+              onChanged: (value) => appState.modifyContent(value),
             )
           )
         ],
@@ -84,6 +94,7 @@ class ButtonsRow extends StatelessWidget {
   Widget build(BuildContext context){
     var appState = context.watch<MyAppState>();
     final boxSize = 40.0;
+    DB db = DB.instance;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,7 +104,8 @@ class ButtonsRow extends StatelessWidget {
           width: boxSize,
           child: FloatingActionButton(
             onPressed: () => {
-              appState.accessNote(-1)
+              appState.accessNote(-1),
+              appState.setNewNote()
             },
             tooltip: "Retour",
             child: Icon(Icons.close)
@@ -104,7 +116,13 @@ class ButtonsRow extends StatelessWidget {
           width: boxSize,
           child: FloatingActionButton(
             onPressed: () => {
-              print("Sauvegarde")
+              print("Création de la note ${appState.n!.toMap()}"),
+              if (appState.n!= null){
+                db.insertNote(appState.n!.getTitle(), appState.n!.getContent()),
+                appState.accessNote(appState.n!.getId()),
+                appState.setNewNote()
+              },
+              print(db.getNumberOfNotes())
             },
             tooltip: "Sauvegarder",
             child: Icon(Icons.check)

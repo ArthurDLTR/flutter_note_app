@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_note_app/db.dart';
+import 'package:flutter_note_app/note.class.dart';
 import 'package:flutter_note_app/note_card.dart';
 import 'package:flutter_note_app/preview_note_card.dart';
 import 'package:provider/provider.dart';
@@ -30,10 +31,27 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   int indexPage = -1;
+  bool newNote = false;
+
+  Note? n;
 
   void accessNote(int i){
     indexPage = i;
+    n = Note(id: indexPage);
     notifyListeners();
+  }
+
+  void setNewNote(){
+    newNote = !newNote;
+    notifyListeners();
+  }
+
+  void modifyTitle(String title) {
+    n?.setTitle(title);
+  }
+
+  void modifyContent(String content) {
+    n?.setContent(content);
   }
 }
 
@@ -64,14 +82,14 @@ class _MyHomePageState extends State<MyHomePage> {
     DB db = DB.instance;
     Widget page;
 
-    if (index == -1){
-      page = HomeContainer();
-    } else if (index == db.getNotesLength()) {
-      page = NewNoteCard(index: index);
-    } else if (index >= 0) {
-      page = NoteCard(index: index);
+    if (appState.newNote){
+      page = NewNoteCard();
     } else {
-      throw UnimplementedError('No note for this index: $index');
+      if (index == -1){
+        page = HomeContainer();
+      } else {
+        page = NoteCard(index: index);
+      }
     }
 
     return Scaffold(
@@ -97,9 +115,10 @@ class HomeContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     DB db = DB.instance;
     var appState = context.watch<MyAppState>();
+    // int count = db.getNumber();
     // db.initializeDatabase();
     // db.insertNote(Note(id: 0, titre: 'Titre test', contenu: 'Contenu test'));
-    print(db.getNotesLength());
+    // print(db.getNumber());
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: Column(
@@ -107,9 +126,9 @@ class HomeContainer extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
                 print("Ajout d'une note");
-                appState.accessNote(db.getNotesLength());
+                appState.setNewNote();
               },
               child: Icon(Icons.add),
             ),
@@ -122,12 +141,33 @@ class HomeContainer extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20)
                 ),
-                child: ListView.builder(
-                  itemCount: db.getNotesLength(),
-                  itemBuilder: (BuildContext context, int index){
-                    return PreviewNoteCard(index: index);
+                child: FutureBuilder<List?>( // AFfichage des 
+                  future: db.getNumber(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return Text("Loading...");
+                      default:
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          List data = snapshot.data ?? [];
+                          return ListView.builder(
+                            itemCount: data.length,
+                            itemBuilder: (context, index) {
+                              return PreviewNoteCard(index: index, title: (data[index] as Map)['titre'], content: (data[index] as Map)['contenu']);
+                            }
+                          );
+                        }
+                    }
                   },
                 ),
+                // child: ListView.builder(
+                //   itemCount: db.getNumber(),
+                //   itemBuilder: (BuildContext context, int index){
+                //     return PreviewNoteCard(index: index);
+                //   },
+                // ),
               ),
             ),
           ),
