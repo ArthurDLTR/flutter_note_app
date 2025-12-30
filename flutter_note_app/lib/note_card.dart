@@ -12,9 +12,7 @@ class NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
-    // var appState = context.watch<MyAppState>();
-
-    // DB db = DB();
+    var appState = context.watch<MyAppState>();
 
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -22,23 +20,29 @@ class NoteCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ButtonsRow(),
+          ActionsRow(),
           Align(
             alignment: Alignment.center,
-            child: RichText( // Titre de la note
-              text: TextSpan(
-                text: "Titre de la note $index",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 242, 242, 242), fontSize: 24),
-              ),
+            child: TextFormField( // Titre de la note
+              maxLines: 1,
+              initialValue: appState.n?.getTitle(),
+              decoration: InputDecoration(labelText: "Title"),
+              onChanged: (value) => appState.modifyTitle(value),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(100)
+              ],
             ),
           ),
           Align(
             alignment: Alignment.center,
-            child: RichText(
-              text: TextSpan(
-                text: "Contenu complet de la page",
-                style:  TextStyle(color: Color.fromARGB(255, 242, 242, 242)),
-              ),
+            child: TextFormField(
+              maxLines: null,
+              initialValue: appState.n?.getContent(),
+              decoration: InputDecoration(labelText: "Content"),
+              onChanged: (value) => appState.modifyContent(value),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(100)
+              ],
             ),
           )
         ],
@@ -116,16 +120,62 @@ class ButtonsRow extends StatelessWidget {
           width: boxSize,
           child: FloatingActionButton(
             onPressed: () => {
-              print("Création de la note ${appState.n!.toMap()}"),
+              // print("Création de la note ${appState.n!.toMap()}"),
               if (appState.n!= null){
                 db.insertNote(appState.n!.getTitle(), appState.n!.getContent()),
-                appState.accessNote(appState.n!.getId()),
+                appState.accessNote(-1),
                 appState.setNewNote()
               },
-              print(db.getNumberOfNotes())
             },
             tooltip: "Sauvegarder",
             child: Icon(Icons.check)
+          ),
+        ),
+
+      ],
+    );
+  }
+}
+
+class ActionsRow extends StatelessWidget {
+  const ActionsRow ({super.key});
+  
+  @override
+  Widget build(BuildContext context){
+    var appState = context.watch<MyAppState>();
+    final boxSize = 40.0;
+    DB db = DB.instance;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox( // Back button
+          height: boxSize,
+          width: boxSize,
+          child: FloatingActionButton(
+            onPressed: () => {
+              if (appState.n != null){
+                db.updateNote(appState.indexPage, appState.n!.getTitle(), appState.n!.getContent()),
+              },
+              appState.accessNote(-1),
+            },
+            tooltip: "Retour",
+            child: Icon(Icons.close)
+          ),
+        ),
+        SizedBox( // Validate/Save button
+          height: boxSize,
+          width: boxSize,
+          child: FloatingActionButton(
+            onPressed: () => {
+              // print("Création de la note ${appState.n!.toMap()}"),
+              if (appState.n!= null){
+                db.deleteNote(appState.n!.getId()),
+                appState.accessNote(-1),
+              },
+            },
+            tooltip: "Supprimer",
+            child: Icon(Icons.delete)
           ),
         ),
 

@@ -35,9 +35,13 @@ class MyAppState extends ChangeNotifier {
 
   Note? n;
 
-  void accessNote(int i){
+  void accessNote(int i) async {
+    await DB.instance.getNotes();
     indexPage = i;
     n = Note(id: indexPage);
+    if (i >= 0){
+      await n!.update();
+    }
     notifyListeners();
   }
 
@@ -52,6 +56,11 @@ class MyAppState extends ChangeNotifier {
 
   void modifyContent(String content) {
     n?.setContent(content);
+  }
+
+  Future<void> getNewId() async {
+    final int val = await DB.instance.getNumberOfNotes();
+    n = Note(id: val);
   }
 }
 
@@ -79,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     int index = appState.indexPage;
-    DB db = DB.instance;
+    // DB db = DB.instance;
     Widget page;
 
     if (appState.newNote){
@@ -115,7 +124,6 @@ class HomeContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     DB db = DB.instance;
     var appState = context.watch<MyAppState>();
-    // int count = db.getNumber();
     // db.initializeDatabase();
     // db.insertNote(Note(id: 0, titre: 'Titre test', contenu: 'Contenu test'));
     // print(db.getNumber());
@@ -127,7 +135,8 @@ class HomeContainer extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: FloatingActionButton(
               onPressed: () async {
-                print("Ajout d'une note");
+                // print("Ajout d'une note");
+                appState.getNewId();
                 appState.setNewNote();
               },
               child: Icon(Icons.add),
@@ -155,7 +164,7 @@ class HomeContainer extends StatelessWidget {
                           return ListView.builder(
                             itemCount: data.length,
                             itemBuilder: (context, index) {
-                              return PreviewNoteCard(index: index, title: (data[index] as Map)['titre'], content: (data[index] as Map)['contenu']);
+                              return PreviewNoteCard(index: (data[index] as Map)['id'], title: (data[index] as Map)['titre'], content: (data[index] as Map)['contenu']);
                             }
                           );
                         }

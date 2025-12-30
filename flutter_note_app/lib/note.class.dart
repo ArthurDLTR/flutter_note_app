@@ -1,4 +1,4 @@
-// import 'package:flutter_note_app/db.dart';
+import 'package:flutter_note_app/db.dart';
 
 class Note {
   final int id;
@@ -21,5 +21,12 @@ class Note {
 
   Map<String, Object?> toMap() {
     return {'id': id, 'titre': titre, 'contenu': contenu};
+  }
+
+  Future<void> update() async {
+    String data = await DB.instance.getNote(id, "titre");
+    titre = data.toString();
+    data = await DB.instance.getNote(id, "contenu");
+    contenu = data;
   }
 }

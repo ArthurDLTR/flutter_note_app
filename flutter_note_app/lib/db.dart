@@ -78,6 +78,7 @@ class DB {
       _table,
       columns: ['id', _titleColumnName, _contentColumnName],
     );
+    entries.forEach((e) => print(e));
     final list = entries.map(
       (e) => Note.complete(e['id'] as int, e[_titleColumnName] as String, e[_contentColumnName] as String)
     ).toList();
@@ -94,21 +95,29 @@ class DB {
 
   Future<List<Map>> getNumber() async {
     List<Map> result = await _database!.rawQuery('SELECT * FROM notes');
-    // result.forEach((row) => print(row));
     return result;
+  }
+
+  Future<int> getNumberOfNotes() async {
+    List<Map> result = await _database!.rawQuery('SELECT COUNT(id) FROM notes');
+    return Future.value(result[0]["COUNT(id)"]);
     // print(result[0]["COUNT(id)"]);
     // return result[0]["COUNT(id)"];
   }
 
-  int getNumberOfNotes() {
-    int length = 0;
-    // getNumber().then((value) => length = value);
-    return length;
+  Future<String> getNote(int index, String field) async {
+    List<Map> res = await _database!.rawQuery('SELECT id, $_titleColumnName, $_contentColumnName FROM notes WHERE id = $index');
+    // res.forEach((row) => print(row));
+    if (field == _titleColumnName){
+      return Future.value(res[0][_titleColumnName]);
+    } else if (field == _contentColumnName){
+      return Future.value(res[0][_contentColumnName]);
+    }
+    return res[0]['id'];
   }
 
   Future<void> insertNote(String title, String content) async {
     try {
-      print("Insertion dans la table");
       await _database!.insert(_table, {
         _titleColumnName: title,
         _contentColumnName: content
@@ -118,7 +127,7 @@ class DB {
       // }
 
     } on Exception catch (e) {
-      print(e);
+      throw Exception(e);
     }
     // final db = await database;
 
@@ -129,12 +138,15 @@ class DB {
     // );
   }
 
-  Future<void> updateNote(Note n) async {
+  Future<void> updateNote(int index, String title, String content) async {
     await _database!.update(
       _table,
-      n.toMap(),
+      {
+        _titleColumnName: title,
+        _contentColumnName: content
+      },
       where: 'id = ?',
-      whereArgs: [n.id]
+      whereArgs: [index]
     );
   }
 
