@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:flutter_note_app/Note.class.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DB {
-  static const String _file = 'notes_databases.db';
+  static const String _file = 'notes_database.db';
   static const String _table = 'notes';
   static const String _titleColumnName = 'titre';
   static const String _contentColumnName = 'contenu';
@@ -27,8 +30,10 @@ class DB {
   }
 
   Future<Database> open() async {
+    final androidPath = await getApplicationDocumentsDirectory();
+    final path = Platform.isAndroid ? join(androidPath.path, _file) : join(await databaseFactory.getDatabasesPath(), _file);
     return await databaseFactory.openDatabase(
-      join(await databaseFactory.getDatabasesPath(), _file),
+      path,
       options: OpenDatabaseOptions(
         onCreate: (db, version) {
           return db.execute('CREATE TABLE $_table(id INTEGER PRIMARY KEY AUTOINCREMENT, $_titleColumnName TEXT, $_contentColumnName TEXT)');
@@ -78,7 +83,7 @@ class DB {
       _table,
       columns: ['id', _titleColumnName, _contentColumnName],
     );
-    entries.forEach((e) => print(e));
+    // entries.forEach((e) => print(e));
     final list = entries.map(
       (e) => Note.complete(e['id'] as int, e[_titleColumnName] as String, e[_contentColumnName] as String)
     ).toList();
@@ -94,7 +99,7 @@ class DB {
   }
 
   Future<List<Map>> getNumber() async {
-    List<Map> result = await _database!.rawQuery('SELECT * FROM notes');
+    List<Map> result = await _database!.rawQuery('SELECT * FROM notes ORDER BY id DESC');
     return result;
   }
 
